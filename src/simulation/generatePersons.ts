@@ -1,7 +1,6 @@
 import SimulationParameters from './SimulationParameters'
 import Person from './Person'
-import { Point } from 'pixi.js'
-import { randomInt, randomFloat } from '../engine/randomGenerator'
+import { randomFloat } from '../engine/randomGenerator'
 import Vector2D from './Vector2D'
 
 export default function* generatePopulation(
@@ -20,7 +19,7 @@ export function generatePerson(
   return new Person(
     name,
     parameters.personRadius,
-    new Point(
+    new Vector2D(
       randomFloat(
         parameters.screenWidth - parameters.personRadius,
         parameters.personRadius

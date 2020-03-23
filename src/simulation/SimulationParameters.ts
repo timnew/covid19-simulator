@@ -11,6 +11,8 @@ export default class SimulationParameters {
 
   readonly maxInitialSpeed: number = 50
 
+  readonly wallBounce: boolean = false
+
   constructor(readonly screen: Rectangle) {
     this.screenWidth = screen.width
     this.screenHeight = screen.height

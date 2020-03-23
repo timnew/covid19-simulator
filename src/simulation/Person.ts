@@ -1,7 +1,8 @@
 import { GraphicsActor } from '../engine/GraphicsActor'
 import { typedName } from '../engine/Name'
 import Simulation from './Simulation'
-import { Point, PointLike } from 'pixi.js'
+import { Point, PointLike, Rectangle } from 'pixi.js'
+import Vector2D from './Vector2D'
 
 type Color = number
 
@@ -73,22 +74,28 @@ export default class Person extends GraphicsActor<Simulation> {
   constructor(
     name: string,
     readonly radius: number,
-    position: PointLike,
-    velocity: PointLike
+    position: Vector2D,
+    velocity: Vector2D
   ) {
     super(typedName('Person', name))
 
-    this.position.copy(position)
-    this._velocity = new Point(velocity.x, velocity.y)
+    this.personPosition = position
+    this.velocity = Vector2D.fromPoint(velocity)
     this.redraw()
   }
 
-  private _velocity: Point
-  get velocity(): PointLike {
-    return this._velocity
+  private _position: Vector2D = Vector2D.ZERO
+  get personPosition(): Vector2D {
+    return this._position
   }
-  set velocity(value: PointLike) {
-    this._velocity.copy(value)
+  set personPosition(value: Vector2D) {
+    this._position = value
+    this.position.copy(value)
+  }
+  velocity: Vector2D
+
+  get collisionBounds(): Rectangle {
+    return this.getBounds()
   }
 
   update(deltaTime: number, stage: Simulation): void {
@@ -96,11 +103,10 @@ export default class Person extends GraphicsActor<Simulation> {
     // this.redraw()
   }
 
+  touchedBy(another: Person) {}
+
   private updatePosition(deltaTime: number) {
-    this.position.set(
-      this.position.x + this.velocity.x * deltaTime,
-      this.position.y + this.velocity.y * deltaTime
-    )
+    this.personPosition = this.personPosition.plus(this.velocity.mul(deltaTime))
   }
 
   private redraw() {

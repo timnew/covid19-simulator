@@ -7,17 +7,16 @@ import Game from '../engine/Game'
 import Person from './Person'
 import SimulationParameters from './SimulationParameters'
 import generatePopulation from './generatePersons'
+import InteractionController from './InteractionController'
+import Population from './Population'
 
 export default class Simulation extends Stage<Simulation> {
+  readonly interactionController: InteractionController = new InteractionController()
+  readonly population: Population = new Population()
+
   constructor(game: Game, readonly parameters: SimulationParameters) {
     super('Simulation', game)
     ;(window as any).simulation = this
-  }
-
-  private _persons: Person[] = []
-
-  get persons(): Person[] {
-    return this._persons
   }
 
   setup() {
@@ -25,9 +24,16 @@ export default class Simulation extends Stage<Simulation> {
       this.restart()
     })
 
-    this._persons = []
+    this.addController(this.interactionController)
+
+    this.setupPopulation()
+  }
+
+  private setupPopulation() {
+    this.population.clear()
+
     for (const person of generatePopulation(this.parameters)) {
-      this._persons.push(person)
+      this.population.add(person)
       this.addActor(person)
     }
   }
