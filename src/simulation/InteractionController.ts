@@ -5,6 +5,9 @@ import Person from './Person'
 import { Rectangle } from 'pixi.js'
 import Vector2D from './Vector2D'
 import SimulationParameters from './SimulationParameters'
+import createDebug from 'debug'
+
+const debug = createDebug('app:InteractionController')
 
 export default class InteractionController implements GameObject<Simulation> {
   readonly name: Name = singletonName('InteractionController')
@@ -20,10 +23,8 @@ export default class InteractionController implements GameObject<Simulation> {
         const p2 = population.get(i2)
 
         if (this.testCollision(p1, p2)) {
-          console.log(`${p1.name.localName} collides with ${p2.name.localName}`)
-          console.log('Before', p1.velocity, p2.velocity)
+          debug(`${p1.name} collides with ${p2.name}`)
           this.collide(p1, p2)
-          console.log('After', p1.velocity, p2.velocity)
         }
       }
 
@@ -103,6 +104,7 @@ export default class InteractionController implements GameObject<Simulation> {
     }
 
     if (x !== person.x || y !== person.y) {
+      debug(`${person.name} penetrated wall`)
       person.personPosition = new Vector2D(x, y)
     }
   }
@@ -123,6 +125,7 @@ export default class InteractionController implements GameObject<Simulation> {
     }
 
     if (vx < 0 || vy < 0) {
+      debug(`${person.name} bounced on wall`)
       person.velocity = person.velocity.mul2(vx, vy)
     }
   }

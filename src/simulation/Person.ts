@@ -1,8 +1,9 @@
 import { GraphicsActor } from '../engine/GraphicsActor'
 import { typedName } from '../engine/Name'
 import Simulation from './Simulation'
-import { Point, PointLike, Rectangle } from 'pixi.js'
+import { Rectangle } from 'pixi.js'
 import Vector2D from './Vector2D'
+import createDebug from 'debug'
 
 type Color = number
 
@@ -71,6 +72,7 @@ class Cured extends PersonState {
 }
 
 export default class Person extends GraphicsActor<Simulation> {
+  readonly debug: debug.IDebugger
   constructor(
     name: string,
     readonly radius: number,
@@ -78,6 +80,7 @@ export default class Person extends GraphicsActor<Simulation> {
     velocity: Vector2D
   ) {
     super(typedName('Person', name))
+    this.debug = createDebug(`app:Person:${name}`)
 
     this.personPosition = position
     this.velocity = Vector2D.fromPoint(velocity)
@@ -103,7 +106,9 @@ export default class Person extends GraphicsActor<Simulation> {
     // this.redraw()
   }
 
-  touchedBy(another: Person) {}
+  touchedBy(another: Person) {
+    this.debug(`Touched by ${another.name.localName}`)
+  }
 
   private updatePosition(deltaTime: number) {
     this.personPosition = this.personPosition.plus(this.velocity.mul(deltaTime))
