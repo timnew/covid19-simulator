@@ -1,32 +1,49 @@
-import Person, { IPersonState } from './Person'
-import Simulation from './Simulation'
+import Person from './Person'
+import SimulationParameters from './SimulationParameters'
+import { randomBoolean, randomFloat } from '../engine/randomGenerator'
+import createDebug from 'debug'
 
-type Color = number
+export type Color = number
 
-const gray: Color = 0x909090
-const red: Color = 0xff3030
-const cyan: Color = 0x30eeee
-const darkGray: Color = 0x303030
-
-export abstract class PersonState implements IPersonState {
-  get isContagious(): Boolean {
+export abstract class PersonState {
+  get isContagious(): boolean {
     return false
   }
-  get isImmunised(): Boolean {
-    return false
+  get hasSymptom(): boolean {
+    return this.isContagious
   }
 
-  constructor(readonly color: Color) {}
+  get isMovable(): boolean {
+    return true
+  }
 
-  updatePerson(person: Person, deltaTime: number, stage: Simulation): void {}
+  private _person!: Person
 
-  abstract touchedBy(person: Person, another: Person): void
+  protected get person(): Person {
+    return this._person
+  }
+
+  protected get parameters(): SimulationParameters {
+    return this.person.parameters
+  }
+
+  constructor(readonly name: string, readonly color: Color) {}
+
+  updatePerson(deltaTime: number): void {}
+
+  touchedBy(another: Person): void {}
 
   attachedTo(person: Person): void {
-    this.redraw(person)
+    this._person = person
+
+    this.person.isMovable = this.person.isMovable && this.isMovable
+
+    this.redraw()
   }
 
-  redraw(person: Person) {
+  protected redraw() {
+    const person = this.person
+
     person.clear()
 
     person.beginFill(this.color)
@@ -37,36 +54,70 @@ export abstract class PersonState implements IPersonState {
 
 export class Neutral extends PersonState {
   constructor() {
-    super(0x909090)
+    super('Neutral', 0x909090)
   }
-  touchedBy(person: Person, another: Person): void {
-    throw new Error('Method not implemented.')
+
+  touchedBy(another: Person): void {
+    if (another.state.isContagious) {
+      this.person.state = new Infected(
+        randomFloat(
+          this.parameters.maxCourseDuration,
+          this.parameters.minCourseDuration
+        )
+      )
+    }
   }
 }
 
 export class Infected extends PersonState {
-  constructor() {
-    super(0xff9090)
+  readonly debug = createDebug('app:State:Infected')
+
+  get isContagious() {
+    return true
   }
-  touchedBy(person: Person, another: Person): void {
-    throw new Error('Method not implemented.')
+
+  constructor(courseDuration: number) {
+    super('Infected', 0xff3030)
+    this.remainingDuration = courseDuration
+  }
+
+  private _duration!: number
+  get remainingDuration(): number {
+    return this._duration
+  }
+  set remainingDuration(value: number) {
+    this._duration = value
+    if (this._duration <= 0) {
+      this.courseEnds()
+    }
+  }
+
+  updatePerson(deltaTime: number): void {
+    this.remainingDuration -= deltaTime
+    this.debug('Remain: %d', this.remainingDuration)
+  }
+
+  courseEnds() {
+    if (randomBoolean(this.parameters.fatalityRate)) {
+      this.person.state = new Deceased()
+    } else {
+      this.person.state = new Cured()
+    }
   }
 }
 
 export class Cured extends PersonState {
   constructor() {
-    super(0x90ffff)
-  }
-  touchedBy(person: Person, another: Person): void {
-    throw new Error('Method not implemented.')
+    super('Cured', 0x30eeee)
   }
 }
 
 export class Deceased extends PersonState {
   constructor() {
-    super(0x303030)
+    super('Deceased', 0x303030)
   }
-  touchedBy(person: Person, another: Person): void {
-    throw new Error('Method not implemented.')
+
+  get isMovable(): boolean {
+    return false
   }
 }

@@ -1,12 +1,12 @@
 import SimulationParameters from './SimulationParameters'
-import Person, { IPersonState } from './Person'
+import Person from './Person'
 import {
   randomFloat,
   PickAllowance,
   randomPick
 } from '../engine/randomGenerator'
 import Vector2D from './Vector2D'
-import { Infected, Neutral } from './PersonState'
+import { Infected, Neutral, PersonState } from './PersonState'
 
 export default function* generatePopulation(
   parameters: SimulationParameters
@@ -19,13 +19,6 @@ export default function* generatePopulation(
 }
 
 export class PopulationAllowance {
-  readonly maxSpeed: number
-  readonly minSpeed: number
-
-  readonly personRadius: number
-
-  readonly population: number
-
   readonly rows: number
   readonly cols: number
 
@@ -40,13 +33,8 @@ export class PopulationAllowance {
 
   readonly stateAllowance: PickAllowance
 
-  constructor(parameters: SimulationParameters) {
-    this.maxSpeed = parameters.maxInitialSpeed
-    this.minSpeed = parameters.minInitialSpeed
-
-    this.personRadius = parameters.personRadius
-
-    const population = (this.population = parameters.population)
+  constructor(readonly parameters: SimulationParameters) {
+    const population = parameters.population
 
     // === Offset algorithm ===
 
@@ -79,7 +67,7 @@ export class PopulationAllowance {
   }
 
   get headCount(): number {
-    return this.population - this.index
+    return this.parameters.population - this.index
   }
 
   get hasMore(): boolean {
@@ -97,7 +85,8 @@ export class PopulationAllowance {
   createPerson(): Person {
     const result = new Person(
       this.nextName(),
-      this.personRadius,
+      this.parameters,
+      this.parameters.personRadius,
       this.nextPosition(),
       this.nextVelocity(),
       this.nextMovable(),
@@ -126,7 +115,10 @@ export class PopulationAllowance {
 
   private nextVelocity(): Vector2D {
     return Vector2D.fromPolarCoordinate(
-      randomFloat(this.maxSpeed, this.minSpeed),
+      randomFloat(
+        this.parameters.maxInitialSpeed,
+        this.parameters.minInitialSpeed
+      ),
       randomFloat(Math.PI * 2)
     )
   }
@@ -136,12 +128,12 @@ export class PopulationAllowance {
     return picked == 'movable'
   }
 
-  private nextState(): IPersonState {
+  private nextState(): PersonState {
     const picked = randomPick(this.stateAllowance)
 
     switch (picked) {
       case 'infected':
-        return new Infected()
+        return new Infected(this.parameters.maxCourseDuration)
       default:
         return new Neutral()
     }

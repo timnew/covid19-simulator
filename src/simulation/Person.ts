@@ -4,23 +4,20 @@ import Simulation from './Simulation'
 import { Rectangle } from 'pixi.js'
 import Vector2D from './Vector2D'
 import createDebug from 'debug'
-
-export interface IPersonState {
-  updatePerson(person: Person, deltaTime: number, stage: Simulation): void
-  touchedBy(person: Person, another: Person): void
-  attachedTo(person: Person): void
-}
+import { PersonState } from './PersonState'
+import SimulationParameters from './SimulationParameters'
 
 export default class Person extends GraphicsActor<Simulation> {
   readonly debug: debug.IDebugger
 
   constructor(
     name: string,
+    readonly parameters: SimulationParameters,
     readonly radius: number,
     position: Vector2D,
     velocity: Vector2D,
     public isMovable: boolean,
-    state: IPersonState
+    state: PersonState
   ) {
     super(typedName('Person', name))
     this.debug = createDebug(`app:Person:${name}`)
@@ -42,11 +39,11 @@ export default class Person extends GraphicsActor<Simulation> {
   }
   velocity: Vector2D
 
-  private _state: IPersonState
-  get state(): IPersonState {
+  private _state: PersonState
+  get state(): PersonState {
     return this._state
   }
-  set state(newState: IPersonState) {
+  set state(newState: PersonState) {
     this._state = newState
     newState.attachedTo(this)
   }
@@ -57,10 +54,12 @@ export default class Person extends GraphicsActor<Simulation> {
 
   update(deltaTime: number, stage: Simulation): void {
     this.updatePosition(deltaTime)
+    this.state.updatePerson(deltaTime)
   }
 
-  touchedBy(another: Person) {
-    this.debug(`Touched by ${another.name.localName}`)
+  touchedBy(other: Person) {
+    this.debug(`Touched by ${other.name.localName}`)
+    this.state.touchedBy(other)
   }
 
   private updatePosition(deltaTime: number) {

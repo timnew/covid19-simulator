@@ -11,6 +11,10 @@ export function randomInt(max: number, min: number = 0) {
   return Math.floor(randomFloat(min, max))
 }
 
+export function randomBoolean(trueRate: number): boolean {
+  return Math.random() <= trueRate
+}
+
 export interface PickAllowance {
   [name: string]: number
 }
