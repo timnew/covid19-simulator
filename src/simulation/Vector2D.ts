@@ -31,6 +31,13 @@ export default class Vector2D implements PointLike {
     return Math.sqrt(this.y * this.y + this.x * this.x)
   }
 
+  project(angle: number): Vector2D {
+    return new Vector2D(
+      this.x * Math.cos(angle) - this.y * Math.sin(angle),
+      this.x * Math.sin(angle) + this.y * Math.cos(angle)
+    )
+  }
+
   static fromPolarCoordinate(r: number, phi: number): Vector2D {
     return new Vector2D(r * Math.cos(phi), r * Math.sin(phi))
   }

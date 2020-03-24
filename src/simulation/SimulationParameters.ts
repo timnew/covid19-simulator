@@ -6,6 +6,7 @@ export default class SimulationParameters {
   readonly personRadius: number
   readonly population: number
   readonly maxInitialSpeed: number
+  readonly minInitialSpeed: number
   readonly wallBounce: boolean
 
   readonly fatalityRate: number
@@ -19,7 +20,8 @@ export default class SimulationParameters {
     this.personRadius = 5
     this.population = 100
 
-    this.maxInitialSpeed = 50
+    this.maxInitialSpeed = 80
+    this.minInitialSpeed = 30
     this.wallBounce = false
 
     this.fatalityRate = 0.05

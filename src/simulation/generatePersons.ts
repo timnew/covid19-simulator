@@ -20,6 +20,7 @@ export default function* generatePopulation(
 
 export class PopulationAllowance {
   readonly maxSpeed: number
+  readonly minSpeed: number
 
   readonly personRadius: number
 
@@ -41,6 +42,7 @@ export class PopulationAllowance {
 
   constructor(parameters: SimulationParameters) {
     this.maxSpeed = parameters.maxInitialSpeed
+    this.minSpeed = parameters.minInitialSpeed
 
     this.personRadius = parameters.personRadius
 
@@ -124,7 +126,7 @@ export class PopulationAllowance {
 
   private nextVelocity(): Vector2D {
     return Vector2D.fromPolarCoordinate(
-      randomFloat(this.maxSpeed),
+      randomFloat(this.maxSpeed, this.minSpeed),
       randomFloat(Math.PI * 2)
     )
   }

@@ -48,9 +48,28 @@ export default class InteractionController implements GameObject<Simulation> {
   }
 
   private performElasticCollision(p1: Person, p2: Person) {
-    const tmp = p1.velocity
-    p1.velocity = p2.velocity
-    p2.velocity = tmp
+    const vDiff = p1.velocity.minus(p2.velocity)
+
+    const pDiff = p2.personPosition.minus(p1.personPosition)
+
+    if (vDiff.x * pDiff.x + vDiff.y * pDiff.y >= 0) {
+      // Collision Angle
+      const angle = -Math.atan2(pDiff.y, pDiff.x)
+
+      // Project velocity to collision angle
+      // where x is aligned collision, which is changed
+      //       y is perpendicular to collision, which remains
+      const pv1 = p1.velocity.project(angle)
+      const pv2 = p2.velocity.project(angle)
+
+      // Collision swaps x
+      const cpv1 = new Vector2D(pv2.x, pv1.y)
+      const cpv2 = new Vector2D(pv1.x, pv2.y)
+
+      // Project velocity back to axises
+      p1.velocity = cpv1.project(-angle)
+      p2.velocity = cpv2.project(-angle)
+    }
   }
 
   private performElasticBounce(p: Person) {
@@ -91,7 +110,7 @@ export default class InteractionController implements GameObject<Simulation> {
     const sumOfRadius = r1 + r2
     const radiusSquare = sumOfRadius * sumOfRadius
 
-    return distanceSquare <= radiusSquare
+    return distanceSquare < radiusSquare
   }
 
   private testWall(person: Person, parameters: SimulationParameters) {
