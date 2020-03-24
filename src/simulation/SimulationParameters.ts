@@ -1,5 +1,4 @@
 import { Rectangle } from 'pixi.js'
-
 export default class SimulationParameters {
   readonly screenHeight: number
   readonly screenWidth: number
@@ -10,6 +9,8 @@ export default class SimulationParameters {
   readonly wallBounce: boolean
 
   readonly fatalityRate: number
+  readonly initialInfected: number
+  readonly allowMoveCount: number
 
   constructor(readonly screen: Rectangle) {
     this.screenWidth = screen.width
@@ -22,5 +23,8 @@ export default class SimulationParameters {
     this.wallBounce = false
 
     this.fatalityRate = 0.05
+
+    this.initialInfected = 1
+    this.allowMoveCount = this.population
   }
 }
