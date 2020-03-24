@@ -54,7 +54,7 @@ export default abstract class Stage<T extends Stage<T>> extends Container
   }
 
   addActor(actor: GameObject<T> & DisplayObject, onTop: boolean = false) {
-    debug('Add actor: %s', actor.name)
+    debug(`Add actor: ${actor.name}`)
     this.actors.setValue(actor.name.type, actor)
     if (onTop) {
       this.addChild(actor as DisplayObject)
@@ -64,19 +64,19 @@ export default abstract class Stage<T extends Stage<T>> extends Container
   }
 
   addController(controller: GameObject<T>) {
-    debug('Add controller: %s', controller.name)
+    debug(`Add controller: ${controller.name}`)
     this.controllers.setValue(controller.name.type, controller)
   }
 
   removeActor(actor: GameObject<T> & DisplayObject) {
-    debug('Remove actor: %s', actor.name)
+    debug(`Remove actor: ${actor.name}`)
 
     this.actors.remove(actor.name.type, actor)
     this.removeChild(actor)
   }
 
   removeController(controller: GameObject<T>) {
-    debug('Remove controller: %s', controller.name)
+    debug(`Remove controller: ${controller.name}`)
 
     this.controllers.remove(controller.name.type, controller)
   }
@@ -86,11 +86,12 @@ export default abstract class Stage<T extends Stage<T>> extends Container
   update(deltaTime: number): void {
     const stage: T = (this as any) as T
 
-    this.controllers.values().forEach(obj => {
-      obj.update(deltaTime, stage)
-    })
     this.actors.values().forEach(actor => {
       actor.update(deltaTime, stage)
+    })
+
+    this.controllers.values().forEach(obj => {
+      obj.update(deltaTime, stage)
     })
 
     this.updateOthers()

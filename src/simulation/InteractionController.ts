@@ -33,12 +33,28 @@ export default class InteractionController implements GameObject<Simulation> {
   }
 
   private collide(p1: Person, p2: Person) {
-    const tmp = p1.velocity
-    p1.velocity = p2.velocity
-    p2.velocity = tmp
+    if (p1.isMovable && p2.isMovable) {
+      this.performElasticCollision(p1, p2)
+    } else if (p1.isMovable) {
+      this.performElasticBounce(p1)
+    } else if (p2.isMovable) {
+      this.performElasticBounce(p2)
+    } else {
+      // Bad case!
+    }
 
     p1.touchedBy(p2)
     p2.touchedBy(p1)
+  }
+
+  private performElasticCollision(p1: Person, p2: Person) {
+    const tmp = p1.velocity
+    p1.velocity = p2.velocity
+    p2.velocity = tmp
+  }
+
+  private performElasticBounce(p: Person) {
+    p.velocity = p.velocity.mul(-1)
   }
 
   private testCollision(p1: Person, p2: Person): Boolean {

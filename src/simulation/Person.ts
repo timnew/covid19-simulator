@@ -5,86 +5,31 @@ import { Rectangle } from 'pixi.js'
 import Vector2D from './Vector2D'
 import createDebug from 'debug'
 
-type Color = number
-
-const gray: Color = 0x909090
-const red: Color = 0xff3030
-const cyan: Color = 0x30eeee
-const darkGray: Color = 0x303030
-
-export abstract class PersonState {
-  get isContagious(): Boolean {
-    return false
-  }
-  get hasSymptom(): Boolean {
-    return false
-  }
-  get isImmunised(): Boolean {
-    return false
-  }
-  get isMovable(): Boolean {
-    return true
-  }
-  get isMoving(): Boolean {
-    return true
-  }
-
-  constructor(readonly color: Color) {}
-}
-
-class Neutral extends PersonState {
-  constructor() {
-    super(gray)
-  }
-}
-
-class Infected extends PersonState {
-  constructor() {
-    super(red)
-  }
-
-  get isContagious() {
-    return true
-  }
-
-  get hasSymptom() {
-    return true
-  }
-}
-
-class Deceased extends PersonState {
-  constructor() {
-    super(darkGray)
-  }
-
-  get isMoving() {
-    return false
-  }
-}
-
-class Cured extends PersonState {
-  constructor() {
-    super(cyan)
-  }
-  get isImmunised() {
-    return true
-  }
+export interface IPersonState {
+  updatePerson(person: Person, deltaTime: number, stage: Simulation): void
+  touchedBy(person: Person, another: Person): void
+  attachedTo(person: Person): void
 }
 
 export default class Person extends GraphicsActor<Simulation> {
   readonly debug: debug.IDebugger
+
   constructor(
     name: string,
     readonly radius: number,
     position: Vector2D,
-    velocity: Vector2D
+    velocity: Vector2D,
+    public isMovable: boolean,
+    state: IPersonState
   ) {
     super(typedName('Person', name))
     this.debug = createDebug(`app:Person:${name}`)
 
     this.personPosition = position
     this.velocity = Vector2D.fromPoint(velocity)
-    this.redraw()
+
+    this._state = state
+    state.attachedTo(this)
   }
 
   private _position: Vector2D = Vector2D.ZERO
@@ -97,13 +42,21 @@ export default class Person extends GraphicsActor<Simulation> {
   }
   velocity: Vector2D
 
+  private _state: IPersonState
+  get state(): IPersonState {
+    return this._state
+  }
+  set state(newState: IPersonState) {
+    this._state = newState
+    newState.attachedTo(this)
+  }
+
   get collisionBounds(): Rectangle {
     return this.getBounds()
   }
 
   update(deltaTime: number, stage: Simulation): void {
     this.updatePosition(deltaTime)
-    // this.redraw()
   }
 
   touchedBy(another: Person) {
@@ -111,14 +64,10 @@ export default class Person extends GraphicsActor<Simulation> {
   }
 
   private updatePosition(deltaTime: number) {
-    this.personPosition = this.personPosition.plus(this.velocity.mul(deltaTime))
-  }
-
-  private redraw() {
-    this.clear()
-
-    this.beginFill(0xc0c0c0)
-    this.drawCircle(0, 0, this.radius)
-    this.endFill()
+    if (this.isMovable) {
+      this.personPosition = this.velocity
+        .mul(deltaTime)
+        .plus(this.personPosition)
+    }
   }
 }

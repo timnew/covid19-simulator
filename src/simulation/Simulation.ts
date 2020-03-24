@@ -20,9 +20,9 @@ export default class Simulation extends Stage<Simulation> {
   }
 
   setup() {
-    this.game.keyboard.onKey('KeyR').onEvent('keyDownSingle', () => {
-      this.restart()
-    })
+    // this.game.keyboard.onKey('KeyR').onEvent('keyDownSingle', () => {
+    //   this.restart()
+    // })
 
     this.addController(this.interactionController)
 
