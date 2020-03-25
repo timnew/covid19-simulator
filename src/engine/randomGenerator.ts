@@ -1,7 +1,5 @@
-import createDebug from 'debug'
 import Chance from 'chance'
 
-const debug = createDebug('app:randomGenerator')
 const chance = new Chance()
 
 type AtLeastOneKey<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
@@ -86,4 +84,8 @@ export function randomPick(allowance: PickAllowance): string {
 
 export function randomName(): string {
   return chance.first()
+}
+
+export function randomAngle(): number {
+  return chance.floating({min: 0 , max: Math.PI*2})
 }

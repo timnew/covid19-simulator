@@ -4,7 +4,8 @@ import {
   randomFloat,
   PickAllowance,
   randomPick,
-  randomName
+  randomName,
+  randomAngle
 } from '../engine/randomGenerator'
 import Vector2D from './Vector2D'
 import { Infected, Neutral, PersonState } from './PersonState'
@@ -123,11 +124,8 @@ export class PopulationAllowance {
 
   private nextVelocity(): Vector2D {
     return Vector2D.fromPolarCoordinate(
-      randomFloat({
-        min: this.parameters.minInitialSpeed,
-        max: this.parameters.maxInitialSpeed
-      }),
-      randomFloat({ min: 0, max: Math.PI * 2 })
+      randomFloat(this.parameters.intialSpeed),
+      randomAngle()
     )
   }
 

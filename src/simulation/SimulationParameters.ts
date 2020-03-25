@@ -1,4 +1,5 @@
 import { Rectangle } from 'pixi.js'
+import { RandomVariable } from '../engine/randomGenerator'
 
 export default class SimulationParameters {
   readonly screenHeight: number
@@ -7,8 +8,11 @@ export default class SimulationParameters {
   readonly personRadius: number = 5
   readonly population: number = 200
 
-  readonly maxInitialSpeed: number = 80
-  readonly minInitialSpeed: number = 30
+  readonly intialSpeed: RandomVariable = {
+    mean: 50,
+    dev: 2
+  }
+
   readonly wallBounce: boolean = false
 
   readonly initialInfected: number = 1
