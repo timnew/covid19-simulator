@@ -93,10 +93,7 @@ export class Infected extends PersonState {
 
   constructor(
     parameters: SimulationParameters,
-    private courseDuration: number = randomFloat({
-      max: parameters.maxCourseDuration,
-      min: parameters.minCourseDuration
-    })
+    private courseDuration: number = randomFloat(parameters.courseDuration)
   ) {
     super(parameters, 'Infected', 0xff3030)
     this.immunity = parameters.infectedImmunity

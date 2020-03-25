@@ -18,8 +18,10 @@ export default class SimulationParameters {
   readonly initialInfected: number = 1
   readonly allowMoveCount: number = this.population
 
-  readonly minCourseDuration: number = 5
-  readonly maxCourseDuration: number = 10
+  readonly courseDuration: RandomVariable = {
+    mean: 10
+  }
+  readonly courseDurationPatient0: RandomVariable = 12
 
   readonly neutralImmunity: number = 100
   readonly curedImmunity: number = Infinity

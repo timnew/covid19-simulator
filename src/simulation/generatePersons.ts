@@ -5,7 +5,8 @@ import {
   PickAllowance,
   randomPick,
   randomName,
-  randomAngle
+  randomAngle,
+  randomInt
 } from '../engine/randomGenerator'
 import Vector2D from './Vector2D'
 import { Infected, Neutral, PersonState } from './PersonState'
@@ -139,7 +140,7 @@ export class PopulationAllowance {
 
     switch (picked) {
       case 'infected':
-        return new Infected(this.parameters, this.parameters.maxCourseDuration)
+        return new Infected(this.parameters, randomInt(this.parameters.courseDurationPatient0))
       default:
         return new Neutral(this.parameters)
     }
