@@ -17,24 +17,20 @@ export abstract class PersonState {
     return true
   }
 
-  private _person!: Person
+  protected person!: Person
 
-  protected get person(): Person {
-    return this._person
-  }
-
-  protected get parameters(): SimulationParameters {
-    return this.person.parameters
-  }
-
-  constructor(readonly name: string, readonly color: Color) {}
+  constructor(
+    readonly parameters: SimulationParameters,
+    readonly name: string,
+    readonly color: Color
+  ) {}
 
   updatePerson(deltaTime: number): void {}
 
   touchedBy(another: Person): void {}
 
   attachedTo(person: Person): void {
-    this._person = person
+    this.person = person
 
     this.person.isMovable = this.person.isMovable && this.isMovable
 
@@ -53,13 +49,14 @@ export abstract class PersonState {
 }
 
 export class Neutral extends PersonState {
-  constructor() {
-    super('Neutral', 0x909090)
+  constructor(parameters: SimulationParameters) {
+    super(parameters, 'Neutral', 0x909090)
   }
 
   touchedBy(another: Person): void {
     if (another.state.isContagious) {
       this.person.state = new Infected(
+        this.parameters,
         randomFloat(
           this.parameters.maxCourseDuration,
           this.parameters.minCourseDuration
@@ -76,8 +73,11 @@ export class Infected extends PersonState {
     return true
   }
 
-  constructor(courseDuration: number) {
-    super('Infected', 0xff3030)
+  constructor(
+    parameters: SimulationParameters,
+    courseDuration: number = parameters.maxCourseDuration
+  ) {
+    super(parameters, 'Infected', 0xff3030)
     this.remainingDuration = courseDuration
   }
 
@@ -99,22 +99,22 @@ export class Infected extends PersonState {
 
   courseEnds() {
     if (randomBoolean(this.parameters.fatalityRate)) {
-      this.person.state = new Deceased()
+      this.person.state = new Deceased(this.parameters)
     } else {
-      this.person.state = new Cured()
+      this.person.state = new Cured(this.parameters)
     }
   }
 }
 
 export class Cured extends PersonState {
-  constructor() {
-    super('Cured', 0x30eeee)
+  constructor(parameters: SimulationParameters) {
+    super(parameters, 'Cured', 0x30eeee)
   }
 }
 
 export class Deceased extends PersonState {
-  constructor() {
-    super('Deceased', 0x303030)
+  constructor(parameters: SimulationParameters) {
+    super(parameters, 'Deceased', 0x303030)
   }
 
   get isMovable(): boolean {

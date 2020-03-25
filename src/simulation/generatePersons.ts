@@ -85,7 +85,6 @@ export class PopulationAllowance {
   createPerson(): Person {
     const result = new Person(
       this.nextName(),
-      this.parameters,
       this.parameters.personRadius,
       this.nextPosition(),
       this.nextVelocity(),
@@ -133,9 +132,9 @@ export class PopulationAllowance {
 
     switch (picked) {
       case 'infected':
-        return new Infected(this.parameters.maxCourseDuration)
+        return new Infected(this.parameters)
       default:
-        return new Neutral()
+        return new Neutral(this.parameters)
     }
   }
 }

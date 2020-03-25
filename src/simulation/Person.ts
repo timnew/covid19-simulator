@@ -5,14 +5,12 @@ import { Rectangle } from 'pixi.js'
 import Vector2D from './Vector2D'
 import createDebug from 'debug'
 import { PersonState } from './PersonState'
-import SimulationParameters from './SimulationParameters'
 
 export default class Person extends GraphicsActor<Simulation> {
   readonly debug: debug.IDebugger
 
   constructor(
     name: string,
-    readonly parameters: SimulationParameters,
     readonly radius: number,
     position: Vector2D,
     velocity: Vector2D,
