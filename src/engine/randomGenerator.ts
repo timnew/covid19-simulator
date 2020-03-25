@@ -1,18 +1,23 @@
-import sum from 'lodash.sum'
 import createDebug from 'debug'
+import Chance from 'chance'
 
 const debug = createDebug('app:randomGenerator')
+const chance = new Chance()
 
 export function randomFloat(max: number, min: number = 0) {
-  return min + Math.random() * (max - min)
+  return chance.floating({ min: min, max: max })
 }
 
 export function randomInt(max: number, min: number = 0) {
-  return Math.floor(randomFloat(min, max))
+  return chance.integer({ min: min, max: max })
 }
 
 export function randomBoolean(trueRate: number): boolean {
-  return Math.random() <= trueRate
+  if (0 < trueRate && trueRate < 1) {
+    return chance.bool({ likelihood: trueRate * 100 })
+  } else {
+    return chance.bool({ likelihood: trueRate })
+  }
 }
 
 export interface PickAllowance {
@@ -21,21 +26,11 @@ export interface PickAllowance {
 
 export function randomPick(allowance: PickAllowance): string {
   const keys = Object.keys(allowance)
-  const total = sum(Object.values(allowance))
+  const weights = Object.values(allowance)
 
-  let value = randomInt(total)
+  const picked = chance.weighted(keys, weights)
 
-  debug('allowance: %o', allowance)
-  debug('value %s', value)
+  allowance[picked] -= 1
 
-  for (const key of keys) {
-    if (value < allowance[key]) {
-      allowance[key] -= 1
-      return key
-    } else {
-      value -= allowance[key]
-    }
-  }
-
-  throw new Error('Impossible')
+  return picked
 }

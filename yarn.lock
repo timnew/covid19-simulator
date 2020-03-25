@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@types/chance@^1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@types/chance/-/chance-1.0.9.tgz#2074530976d53cfec84cbea0037923be31320e20"
+  integrity sha512-QEWzf4BICJwa9rr43hSRCAWDhxyakGl2iIXj5PsfGPuOBaJhv50tGX/P5flU8hStatLudPEhlJrZC2qwScD5nQ==
+
 "@types/debug@^0.0.31":
   version "0.0.31"
   resolved "https://registry.yarnpkg.com/@types/debug/-/debug-0.0.31.tgz#bac8d8aab6a823e91deb7f79083b2a35fa638f33"
