@@ -1,37 +1,33 @@
 import { Rectangle } from 'pixi.js'
+
 export default class SimulationParameters {
   readonly screenHeight: number
   readonly screenWidth: number
 
-  readonly personRadius: number
-  readonly population: number
-  readonly maxInitialSpeed: number
-  readonly minInitialSpeed: number
-  readonly wallBounce: boolean
+  readonly personRadius: number = 5
+  readonly population: number = 200
 
-  readonly initialInfected: number
-  readonly allowMoveCount: number
+  readonly maxInitialSpeed: number = 80
+  readonly minInitialSpeed: number = 30
+  readonly wallBounce: boolean = false
 
-  readonly fatalityRate: number
-  readonly minCourseDuration: number
-  readonly maxCourseDuration: number
+  readonly initialInfected: number = 1
+  readonly allowMoveCount: number = this.population
 
-  constructor(readonly screen: Rectangle) {
+  readonly minCourseDuration: number = 5
+  readonly maxCourseDuration: number = 10
+
+  readonly neutralImmunity: number = 100
+  readonly curedImmunity: number = Infinity
+  readonly infectedImmunity: number = -100
+
+  readonly contagiousInfectionPower: number = 100
+  readonly contagiousBoostPower: number = 0
+
+  readonly virusDevelopmentFactor: number = 0
+
+  constructor(screen: Rectangle) {
     this.screenWidth = screen.width
     this.screenHeight = screen.height
-
-    this.personRadius = 5
-    this.population = 200
-
-    this.maxInitialSpeed = 80
-    this.minInitialSpeed = 30
-    this.wallBounce = false
-
-    this.initialInfected = 1
-    this.allowMoveCount = this.population
-
-    this.fatalityRate = 0.5
-    this.minCourseDuration = 5
-    this.maxCourseDuration = 10
   }
 }

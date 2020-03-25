@@ -3,7 +3,8 @@ import Person from './Person'
 import {
   randomFloat,
   PickAllowance,
-  randomPick
+  randomPick,
+  randomName
 } from '../engine/randomGenerator'
 import Vector2D from './Vector2D'
 import { Infected, Neutral, PersonState } from './PersonState'
@@ -98,27 +99,35 @@ export class PopulationAllowance {
   }
 
   private nextName(): string {
-    return `P${this.headCount}`
+    return randomName()
   }
 
   private nextPosition(): Vector2D {
     return new Vector2D(
       this.halfBlockWidth +
         this.x * this.blockWidth +
-        randomFloat(this.halfBlockWidth * 0.8, -this.halfBlockWidth * 0.8),
+        this.halfBlockWidth *
+          randomFloat({
+            min: -0.8,
+            max: 0.8
+          }),
       this.halfBlockHeight +
         this.y * this.blockHeight +
-        randomFloat(this.halfBlockHeight * 0.8, -this.halfBlockHeight * 0.8)
+        this.halfBlockHeight *
+          randomFloat({
+            min: -0.8,
+            max: 0.8
+          })
     )
   }
 
   private nextVelocity(): Vector2D {
     return Vector2D.fromPolarCoordinate(
-      randomFloat(
-        this.parameters.maxInitialSpeed,
-        this.parameters.minInitialSpeed
-      ),
-      randomFloat(Math.PI * 2)
+      randomFloat({
+        min: this.parameters.minInitialSpeed,
+        max: this.parameters.maxInitialSpeed
+      }),
+      randomFloat({ min: 0, max: Math.PI * 2 })
     )
   }
 
@@ -132,7 +141,7 @@ export class PopulationAllowance {
 
     switch (picked) {
       case 'infected':
-        return new Infected(this.parameters)
+        return new Infected(this.parameters, this.parameters.maxCourseDuration)
       default:
         return new Neutral(this.parameters)
     }

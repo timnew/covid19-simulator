@@ -4,19 +4,68 @@ import Chance from 'chance'
 const debug = createDebug('app:randomGenerator')
 const chance = new Chance()
 
-export function randomFloat(max: number, min: number = 0) {
-  return chance.floating({ min: min, max: max })
+type AtLeastOneKey<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
+  U[keyof U]
+
+interface MinMaxRange {
+  min: number
+  max: number
 }
 
-export function randomInt(max: number, min: number = 0) {
-  return chance.integer({ min: min, max: max })
+interface NormalRangeMeanOnly {
+  mean: number
 }
 
-export function randomBoolean(trueRate: number): boolean {
-  if (0 < trueRate && trueRate < 1) {
-    return chance.bool({ likelihood: trueRate * 100 })
+interface NormalRange extends NormalRangeMeanOnly {
+  dev: number
+}
+
+export type RandomVariable =
+  | number
+  | AtLeastOneKey<MinMaxRange>
+  | NormalRange
+  | NormalRangeMeanOnly
+
+function isMinMaxRange(options: RandomVariable): options is MinMaxRange {
+  const range = options as MinMaxRange
+  return range.max !== undefined || range.min !== undefined
+}
+
+function isNormalRange(
+  options: RandomVariable
+): options is NormalRangeMeanOnly {
+  return (options as NormalRangeMeanOnly).mean !== undefined
+}
+
+export function randomFloat(options: RandomVariable): number {
+  if (isMinMaxRange(options)) {
+    return chance.floating(options)
+  }
+
+  if (isNormalRange(options)) {
+    return chance.normal(options)
+  }
+
+  return options as number
+}
+
+export function randomInt(options: RandomVariable): number {
+  if (isMinMaxRange(options)) {
+    return chance.integer(options)
+  }
+
+  if (isNormalRange(options)) {
+    return Math.round(chance.normal(options))
+  }
+
+  return Math.round(options as number)
+}
+
+export function randomBoolean(likelihood: number): boolean {
+  if (0 < likelihood && likelihood < 1) {
+    return chance.bool({ likelihood: likelihood * 100 })
   } else {
-    return chance.bool({ likelihood: trueRate })
+    return chance.bool({ likelihood: likelihood })
   }
 }
 
@@ -33,4 +82,8 @@ export function randomPick(allowance: PickAllowance): string {
   allowance[picked] -= 1
 
   return picked
+}
+
+export function randomName(): string {
+  return chance.first()
 }

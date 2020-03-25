@@ -3,12 +3,26 @@ import SimulationParameters from './SimulationParameters'
 import { randomBoolean, randomFloat } from '../engine/randomGenerator'
 import createDebug from 'debug'
 
+type StateConstructor = new (parameters: SimulationParameters) => PersonState
+
 export type Color = number
 
 export abstract class PersonState {
-  get isContagious(): boolean {
-    return false
+  private _immunity!: number
+  get immunity(): number {
+    return this._immunity
   }
+  set immunity(value: number) {
+    this.onImmunityChanged(this._immunity, value)
+    this._immunity = value
+  }
+
+  protected abstract onImmunityChanged(before: number, after: number): void
+
+  get isContagious(): boolean {
+    return this.immunity < 0
+  }
+
   get hasSymptom(): boolean {
     return this.isContagious
   }
@@ -29,6 +43,10 @@ export abstract class PersonState {
 
   touchedBy(another: Person): void {}
 
+  transitTo(GivenState: StateConstructor) {
+    this.person.state = new GivenState(this.parameters)
+  }
+
   attachedTo(person: Person): void {
     this.person = person
 
@@ -48,67 +66,77 @@ export abstract class PersonState {
   }
 }
 
-export class Neutral extends PersonState {
-  constructor(parameters: SimulationParameters) {
-    super(parameters, 'Neutral', 0x909090)
+abstract class Healthy extends PersonState {
+  onImmunityChanged(_before: number, after: number) {
+    if (after < 0) {
+      this.transitTo(Infected)
+    }
   }
 
   touchedBy(another: Person): void {
     if (another.state.isContagious) {
-      this.person.state = new Infected(
-        this.parameters,
-        randomFloat(
-          this.parameters.maxCourseDuration,
-          this.parameters.minCourseDuration
-        )
-      )
+      this.immunity -= this.parameters.contagiousInfectionPower
     }
+  }
+}
+
+export class Neutral extends Healthy {
+  constructor(parameters: SimulationParameters) {
+    super(parameters, 'Neutral', 0x909090)
+
+    this.immunity = parameters.neutralImmunity
   }
 }
 
 export class Infected extends PersonState {
   readonly debug = createDebug('app:State:Infected')
 
-  get isContagious() {
-    return true
-  }
-
   constructor(
     parameters: SimulationParameters,
-    courseDuration: number = parameters.maxCourseDuration
+    private courseDuration: number = randomFloat({
+      max: parameters.maxCourseDuration,
+      min: parameters.minCourseDuration
+    })
   ) {
     super(parameters, 'Infected', 0xff3030)
-    this.remainingDuration = courseDuration
+    this.immunity = parameters.infectedImmunity
   }
 
-  private _duration!: number
   get remainingDuration(): number {
-    return this._duration
+    return this.courseDuration
   }
   set remainingDuration(value: number) {
-    this._duration = value
-    if (this._duration <= 0) {
+    this.courseDuration = value
+    if (this.courseDuration <= 0) {
       this.courseEnds()
     }
   }
 
   updatePerson(deltaTime: number): void {
+    this.immunity += this.immunity * this.parameters.contagiousBoostPower
     this.remainingDuration -= deltaTime
-    this.debug('Remain: %d', this.remainingDuration)
+    this.debug(
+      'Infected: imm: %d, dur: %d',
+      this.immunity,
+      this.remainingDuration
+    )
   }
 
   courseEnds() {
-    if (randomBoolean(this.parameters.fatalityRate)) {
-      this.person.state = new Deceased(this.parameters)
-    } else {
-      this.person.state = new Cured(this.parameters)
+    this.person.state = new Deceased(this.parameters)
+  }
+
+  protected onImmunityChanged(before: number, after: number): void {
+    if (this.immunity > 0) {
+      this.transitTo(Cured)
     }
   }
 }
 
-export class Cured extends PersonState {
+export class Cured extends Healthy {
   constructor(parameters: SimulationParameters) {
     super(parameters, 'Cured', 0x30eeee)
+    this.immunity = parameters.curedImmunity
   }
 }
 
