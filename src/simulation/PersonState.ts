@@ -8,16 +8,11 @@ type StateConstructor = new (parameters: SimulationParameters) => PersonState
 export type Color = number
 
 export abstract class PersonState {
-  private _immunity!: number
-  get immunity(): number {
-    return this._immunity
-  }
-  set immunity(value: number) {
-    this.onImmunityChanged(this._immunity, value)
-    this._immunity = value
-  }
-
-  protected abstract onImmunityChanged(before: number, after: number): void
+  constructor(
+    readonly parameters: SimulationParameters,
+    readonly name: string,
+    readonly color: Color
+  ) {}
 
   get isContagious(): boolean {
     return this.immunity < 0
@@ -31,17 +26,22 @@ export abstract class PersonState {
     return true
   }
 
+  get isHitEnabled(): boolean {
+    return true
+  }
+
+  private _immunity!: number
+  get immunity(): number {
+    return this._immunity
+  }
+  set immunity(value: number) {
+    this.onImmunityChanged(this._immunity, value)
+    this._immunity = value
+  }
+
+  protected abstract onImmunityChanged(before: number, after: number): void
+
   protected person!: Person
-
-  constructor(
-    readonly parameters: SimulationParameters,
-    readonly name: string,
-    readonly color: Color
-  ) {}
-
-  updatePerson(deltaTime: number): void {}
-
-  touchedBy(another: Person): void {}
 
   transitTo(GivenState: StateConstructor) {
     this.person.state = new GivenState(this.parameters)
@@ -64,6 +64,10 @@ export abstract class PersonState {
     person.drawCircle(0, 0, person.radius)
     person.endFill()
   }
+
+  updatePerson(deltaTime: number): void {}
+
+  touchedBy(other: Person): void {}
 }
 
 abstract class Healthy extends PersonState {
@@ -73,9 +77,9 @@ abstract class Healthy extends PersonState {
     }
   }
 
-  touchedBy(another: Person): void {
-    if (another.state.isContagious) {
-      this.immunity -= this.parameters.contagiousInfectionPower
+  touchedBy(other: Person): void {
+    if (other.state.isContagious) {
+      this.immunity -= randomFloat(this.parameters.contagiousInfectionPower)
     }
   }
 }
@@ -84,7 +88,7 @@ export class Neutral extends Healthy {
   constructor(parameters: SimulationParameters) {
     super(parameters, 'Neutral', 0x909090)
 
-    this.immunity = parameters.neutralImmunity
+    this.immunity = randomFloat(parameters.neutralImmunity)
   }
 }
 
@@ -96,7 +100,7 @@ export class Infected extends PersonState {
     private courseDuration: number = randomFloat(parameters.courseDuration)
   ) {
     super(parameters, 'Infected', 0xff3030)
-    this.immunity = parameters.infectedImmunity
+    this.immunity = randomFloat(parameters.infectedImmunity)
   }
 
   get remainingDuration(): number {
@@ -109,8 +113,15 @@ export class Infected extends PersonState {
     }
   }
 
+  touchedBy(other: Person): void {
+    if (other.state.isContagious) {
+      this.immunity +
+        this.immunity * randomFloat(this.parameters.contagiousBoostPower)
+    }
+  }
+
   updatePerson(deltaTime: number): void {
-    this.immunity += this.immunity * this.parameters.contagiousBoostPower
+    this.immunity += randomFloat(this.parameters.virusDevelopmentFactor)
     this.remainingDuration -= deltaTime
     this.debug(
       'Infected: imm: %d, dur: %d',
@@ -120,7 +131,13 @@ export class Infected extends PersonState {
   }
 
   courseEnds() {
-    this.person.state = new Deceased(this.parameters)
+    if (this.parameters.fatalityRate != null) {
+      this.transitTo(
+        randomBoolean(this.parameters.fatalityRate) ? Deceased : Cured
+      )
+    } else {
+      this.transitTo(Deceased)
+    }
   }
 
   protected onImmunityChanged(before: number, after: number): void {
@@ -133,7 +150,7 @@ export class Infected extends PersonState {
 export class Cured extends Healthy {
   constructor(parameters: SimulationParameters) {
     super(parameters, 'Cured', 0x30eeee)
-    this.immunity = parameters.curedImmunity
+    this.immunity = randomFloat(parameters.curedImmunity)
   }
 }
 
@@ -142,7 +159,13 @@ export class Deceased extends PersonState {
     super(parameters, 'Deceased', 0x303030)
   }
 
+  protected onImmunityChanged(_before: number, _after: number): void {}
+
   get isMovable(): boolean {
+    return false
+  }
+
+  get isHitEnabled(): boolean {
     return false
   }
 }

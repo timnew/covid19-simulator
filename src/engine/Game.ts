@@ -3,7 +3,7 @@ import KeyboardListener from './KeyboardListener'
 
 import GameObject from './GameObject'
 import Simulation from '../simulation/Simulation'
-import SimulationParameters from '../simulation/SimulationParameters'
+import { SuddenDeath, Immunity } from '../simulation/SimulationParameters'
 
 class Game {
   private paused: boolean = false
@@ -34,10 +34,7 @@ class Game {
       this.paused = !this.paused
     })
 
-    const simulation = new Simulation(
-      this,
-      new SimulationParameters(this.screen)
-    )
+    const simulation = new Simulation(this, new Immunity(this.screen))
 
     simulation.setup()
 

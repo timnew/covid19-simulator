@@ -22,4 +22,8 @@ export default class Population {
   get(index: number): Person {
     return this._persons[index]
   }
+
+  findHitEnabled(): Array<Person> {
+    return this.all.filter((p)=> p.state.isHitEnabled)
+  }
 }

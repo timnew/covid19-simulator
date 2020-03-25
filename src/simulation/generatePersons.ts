@@ -25,6 +25,8 @@ export class PopulationAllowance {
   readonly rows: number
   readonly cols: number
 
+  readonly population: number
+
   readonly blockWidth: number
   readonly blockHeight: number
   readonly halfBlockWidth: number
@@ -37,7 +39,8 @@ export class PopulationAllowance {
   readonly stateAllowance: PickAllowance
 
   constructor(readonly parameters: SimulationParameters) {
-    const population = parameters.population
+    const population = randomInt(parameters.population)
+    this.population = population
 
     // === Offset algorithm ===
 
@@ -58,19 +61,21 @@ export class PopulationAllowance {
 
     // ==========================
 
+    const movable = randomInt(parameters.allowMoveCount)
     this.moveableAllowance = {
-      movable: parameters.allowMoveCount,
-      fixed: population - parameters.allowMoveCount
+      movable,
+      fixed: population - movable
     }
 
+    const infected = randomInt(parameters.initialInfected)
     this.stateAllowance = {
-      infected: parameters.initialInfected,
-      neutral: population - parameters.initialInfected
+      infected: infected,
+      neutral: population - infected
     }
   }
 
   get headCount(): number {
-    return this.parameters.population - this.index
+    return this.population - this.index
   }
 
   get hasMore(): boolean {
@@ -88,7 +93,7 @@ export class PopulationAllowance {
   createPerson(): Person {
     const result = new Person(
       this.nextName(),
-      this.parameters.personRadius,
+      randomFloat(this.parameters.personRadius),
       this.nextPosition(),
       this.nextVelocity(),
       this.nextMovable(),
@@ -125,7 +130,7 @@ export class PopulationAllowance {
 
   private nextVelocity(): Vector2D {
     return Vector2D.fromPolarCoordinate(
-      randomFloat(this.parameters.intialSpeed),
+      randomFloat(this.parameters.initialVelocity),
       randomAngle()
     )
   }
@@ -140,7 +145,10 @@ export class PopulationAllowance {
 
     switch (picked) {
       case 'infected':
-        return new Infected(this.parameters, randomInt(this.parameters.courseDurationPatient0))
+        return new Infected(
+          this.parameters,
+          randomInt(this.parameters.courseDurationPatient0)
+        )
       default:
         return new Neutral(this.parameters)
     }

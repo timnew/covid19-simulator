@@ -13,14 +13,14 @@ export default class InteractionController implements GameObject<Simulation> {
   readonly name: Name = singletonName('InteractionController')
 
   update(deltaTime: number, stage: Simulation): void {
-    const population = stage.population
+    const population = stage.population.findHitEnabled()
     const parameters = stage.parameters
 
-    for (let i1 = 0; i1 < population.size; i1++) {
-      const p1 = population.get(i1)
+    for (let i1 = 0; i1 < population.length; i1++) {
+      const p1 = population[i1]
 
-      for (let i2 = i1 + 1; i2 < population.size; i2++) {
-        const p2 = population.get(i2)
+      for (let i2 = i1 + 1; i2 < population.length; i2++) {
+        const p2 = population[i2]
 
         if (this.testCollision(p1, p2)) {
           debug(`${p1.name} collides with ${p2.name}`)
